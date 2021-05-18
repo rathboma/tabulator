@@ -2101,10 +2101,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 			width = Math.min(this.maxWidth, width);
 		}
 
-		if (this.maxInitialWidth) {
-			width = Math.min(this.maxInitialWidth, width);
-		}
-
 		this.width = width;
 		this.widthStyled = width ? width + "px" : "";
 
@@ -2295,15 +2291,18 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 		//set width if present
 		if (typeof this.definition.width !== "undefined" && !force) {
+			// maxInitialWidth ignored here as width specified
 			this.setWidth(this.definition.width);
 		}
+
+		// maxInitialWidth needs to bet set in fitToData.
 
 		//hide header filters to prevent them altering column width
 		if (this.table.modExists("filter")) {
 			this.table.modules.filter.hideHeaderFilterElements();
 		}
 
-		this.fitToData();
+		this.fitToData(force);
 
 		//show header filters again after layout is complete
 		if (this.table.modExists("filter")) {
@@ -2312,7 +2311,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 	};
 
 	//set column width to maximum cell width
-	Column.prototype.fitToData = function () {
+	Column.prototype.fitToData = function (force) {
 		var self = this;
 
 		if (!this.widthFixed) {
@@ -2324,7 +2323,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 		}
 
 		var maxWidth = this.element.offsetWidth;
-
 		if (!self.width || !this.widthFixed) {
 			self.cells.forEach(function (cell) {
 				var width = cell.getWidth();
@@ -2335,7 +2333,11 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 			});
 
 			if (maxWidth) {
-				self.setWidthActual(maxWidth + 1);
+				var setTo = maxWidth + 1;
+				if (this.maxInitialWidth && !force) {
+					setTo = Math.min(setTo, this.maxInitialWidth);
+				}
+				self.setWidthActual(setTo);
 			}
 		}
 	};
